@@ -1,29 +1,30 @@
 package src;
 
-public class AvlArray {
-    Node root;
+public class AvlArray<V> {
+    Node<V> root;
     public AvlArray() {
         this.root = null;
     }
 
-    public AvlArray(Node root) {
-        this.root = root;
+    public AvlArray(V init) {
+        this.root = new Node<>(init);
         this.root.size = getNodeSize(root);
     }
 
-    public int max(int a, int b) {
+    public AvlArray(V... data) {
+        if (data.length == 0)
+            return;
+
+        for(V value : data) {
+            add(value);
+        }
+    }
+
+    private int max(int a, int b) {
         return a > b ? a : b;
     }
 
-    public void inOrder(Node node) {
-        if (node == null)
-            return;
-        inOrder(node.left);
-        System.out.print(node.value + " ");
-        inOrder(node.right);
-    }
-
-    private Node balance(Node node) {
+    private Node<V> balance(Node<V> node) {
         int balance = Node.getBalance(node);
         if (balance > 1) {
             if (Node.getBalance(node.left) < 0)
@@ -39,11 +40,15 @@ public class AvlArray {
         return node;
     }
 
-    private Node addNewNode(Node root, int value, int index) {
+    public int size() {
+        return getNodeSize(this.root);
+    }
+
+    private Node<V> addNewNode(Node<V> root, V value, int index) {
         if (root == null)
-            return new Node(value);
+            return new Node<>(value);
         else if (index == getNodeSize(root.left)) {
-            Node tmp = new Node(value);
+            Node<V> tmp = new Node<>(value);
             tmp.left = root.left;
             root.left = null;
             root.size = getNodeSize(root);
@@ -63,14 +68,18 @@ public class AvlArray {
         return balance(root);
     }
 
-    public void addAndLift(int value, int index) {
+    public void addAndLift(V value, int index) {
         if (this.root == null)
-            this.root = new Node(value);
+            this.root = new Node<>(value);
         else
             this.root = addNewNode(this.root, value, index);
     }
 
-    private Node get(Node node, int index) {
+    public void add(V value) {
+        addAndLift(value, size());
+    }
+
+    private Node<V> get(Node<V> node, int index) {
         if (index == getNodeSize(node.left))
             return node;
         else if (index < getNodeSize(node.left))
@@ -78,12 +87,12 @@ public class AvlArray {
         return get(node.right, index - getNodeSize(node.left) - 1);
     }
 
-    public Node get(int index) {
-        return get(this.root, index);
+    public V get(int index) {
+        return get(this.root, index).value;
     }
 
 
-    private int getNodeSize(Node node) {
+    private int getNodeSize(Node<V> node) {
         int size = 1;
 
         if (node == null)
@@ -96,7 +105,7 @@ public class AvlArray {
         return size;
     }
 
-    private int getNodeHeight(Node node) {
+    private int getNodeHeight(Node<V> node) {
         int lHeight = 0, rHeight = 0;
 
         if (node.left != null)
@@ -112,7 +121,7 @@ public class AvlArray {
         this.root = deleteNode(this.root, index);
     }
 
-    private Node deleteNode(Node node, int index) {
+    private Node<V> deleteNode(Node<V> node, int index) {
         if (node == null)
             return null;
         if (index == getNodeSize(node.left)) {
@@ -128,7 +137,7 @@ public class AvlArray {
         return balance(node);
     }
 
-    private Node deleteNode(Node node) {
+    private Node<V> deleteNode(Node<V> node) {
         if (node.left == null && node.right == null)
             return null;
         else if (node.left == null)
@@ -136,7 +145,7 @@ public class AvlArray {
         else if (node.right == null)
             return node.left;
 
-        Node tmp = getNextNode(node.right);
+        Node<V> tmp = getNextNode(node.right);
         node.value = tmp.value;
         node.right = deleteNode(node.right, 0);
 
@@ -145,15 +154,15 @@ public class AvlArray {
         return node;
     }
 
-    private Node getNextNode(Node node) {
+    private Node<V> getNextNode(Node<V> node) {
         if (node.left != null)
             return getNextNode(node.left);
         return node;
     }
 
-    private Node rightRotation(Node b) {
-        Node a = b.left;
-        Node y = a.right;
+    private Node<V> rightRotation(Node<V> b) {
+        Node<V> a = b.left;
+        Node<V> y = a.right;
         a.right = b;
         b.left = y;
 
@@ -166,9 +175,9 @@ public class AvlArray {
         return a;
     }
 
-    private Node leftRotation(Node b) {
-        Node a = b.right;
-        Node y = a.left;
+    private Node<V> leftRotation(Node<V> b) {
+        Node<V> a = b.right;
+        Node<V> y = a.left;
         a.left = b;
         b.right = y;
 
@@ -182,11 +191,11 @@ public class AvlArray {
         return a;
     }
 
-    private Node doubleRightRotation(Node c) {
-        Node a = c.left;
-        Node b = a.right;
-        Node y = b.left;
-        Node z = b.right;
+    private Node<V> doubleRightRotation(Node<V> c) {
+        Node<V> a = c.left;
+        Node<V> b = a.right;
+        Node<V> y = b.left;
+        Node<V> z = b.right;
 
         b.left = a;
         b.right = c;
@@ -204,11 +213,11 @@ public class AvlArray {
         return b;
     }
 
-    private Node doubleLeftRotation(Node c) {
-        Node a = c.right;
-        Node b = a.left;
-        Node y = b.right;
-        Node z = b.left;
+    private Node<V> doubleLeftRotation(Node<V> c) {
+        Node<V> a = c.right;
+        Node<V> b = a.left;
+        Node<V> y = b.right;
+        Node<V> z = b.left;
 
         b.left = c;
         c.right = z;
@@ -224,5 +233,31 @@ public class AvlArray {
         b.size = getNodeSize(b);
 
         return b;
+    }
+}
+
+class Node<V> {
+    V value;
+    int height;
+    int size;
+    Node<V> right;
+    Node<V> left;
+
+    public Node(V value) {
+        this.value = value;
+        this.height = 1;
+        this.size = 1;
+    }
+
+    public static <T> int getHeight(Node<T> node) {
+        if (node == null)
+            return 0;
+        return node.height;
+    }
+
+    public static <T> int getBalance(Node<T> node) {
+        if (node == null)
+            return 0;
+        return getHeight(node.left) - getHeight(node.right);
     }
 }
